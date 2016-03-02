@@ -14,6 +14,7 @@ class Entity : public SceneNode
 
   private:
     sf::Vector2f velocity;
+    int _Direction;
 
   private:
     virtual void updateCurrent(sf::Time dt);

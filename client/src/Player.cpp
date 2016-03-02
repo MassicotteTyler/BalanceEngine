@@ -5,21 +5,27 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <iostream>
+#include <math.h>
+
+#define ROTATE_SPEED 3.f
 
 struct AircraftMover
 {
-  AircraftMover(float vx, float vy)
-    :velocity(vx, vy)
+  AircraftMover(float vx, float vy, int nDirection)
+    :velocity(vx, vy),
+    direction(nDirection)
   {
-
   }
 
   void operator() (Aircraft& aircraft, sf::Time) const
   {
+    aircraft.rotate(ROTATE_SPEED * direction);
     aircraft.accelerate(velocity);
   }
 
   sf::Vector2f velocity;
+  int direction;
 };
 
 Player::Player()
@@ -85,13 +91,13 @@ void Player::initializeActions()
   const float playerSpeed = 200.f;
 
   _ActionBinding[MoveLeft].action =
-    derivedAction<Aircraft>(AircraftMover(-playerSpeed, 0.f));
+    derivedAction<Aircraft>(AircraftMover(-playerSpeed, 0.f, -1));
   _ActionBinding[MoveRight].action =
-    derivedAction<Aircraft>(AircraftMover(+playerSpeed, 0.f));
+    derivedAction<Aircraft>(AircraftMover(+playerSpeed, 0.f, 1));
   _ActionBinding[MoveUp].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, -playerSpeed));
+    derivedAction<Aircraft>(AircraftMover(0.f, -playerSpeed, 0));
   _ActionBinding[MoveDown].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, +playerSpeed));
+    derivedAction<Aircraft>(AircraftMover(0.f, +playerSpeed, 0));
 }
 
 bool Player::isRealtimeAction(Action action)

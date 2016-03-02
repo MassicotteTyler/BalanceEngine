@@ -96,6 +96,7 @@ void World::adaptPlayerPosition()
       _WorldView.getSize());
   const float borderDistance = 40.f;
 
+  /*
   sf::Vector2f position = _PlayerAircraft->getPosition();
   position.x = std::max(position.x, viewBounds.left + borderDistance);
   position.x = std::min(position.x, viewBounds.left + viewBounds.left +
@@ -104,6 +105,7 @@ void World::adaptPlayerPosition()
   position.y = std::min(position.y, viewBounds.top +
       viewBounds.height - borderDistance);
   _PlayerAircraft->setPosition(position);
+  */
 }
 
 void World::adaptPlayerVelocity()
