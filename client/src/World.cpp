@@ -22,19 +22,16 @@ World::World(sf::RenderWindow& window)
 
 void World::update(sf::Time dt)
 {
-  _WorldView.move(0.f, _ScrollSpeed * dt.asSeconds());
+  //_WorldView.move(0.f, _ScrollSpeed * dt.asSeconds());
+  _WorldView.setCenter(_PlayerAircraft->getPosition());
+  _PlayerAircraft->setVelocity(0.f, 0.f);
 
-  sf::Vector2f position = _PlayerAircraft->getPosition();
-  sf::Vector2f velocity = _PlayerAircraft->getVelocity();
-
-  if (position.x <= _WorldBounds.left + 150.f
-      || position.x >= _WorldBounds.left + _WorldBounds.width - 150.f)
-  {
-    velocity.x = -velocity.x;
-    _PlayerAircraft->setVelocity(velocity);
-  }
+  while(!_CommandQueue.isEmpty())
+    _SceneGraph.onCommand(_CommandQueue.pop(), dt);
+  adaptPlayerVelocity();
 
   _SceneGraph.update(dt);
+  adaptPlayerPosition();
 }
 
 void World::draw()
@@ -79,6 +76,7 @@ void World::buildScene()
   _PlayerAircraft->setVelocity(40.f, _ScrollSpeed);
   _SceneLayers[Air]->attachChild(std::move(leader));
 
+  /*
   //two escort aircrafts
   std::unique_ptr<Aircraft> leftEscort(new Aircraft(Aircraft::Raptor,
         _Textures));
@@ -89,4 +87,38 @@ void World::buildScene()
         _Textures));
   rightEscort->setPosition(80.f, 50.f);
   _PlayerAircraft->attachChild(std::move(rightEscort));
+  */
+}
+
+void World::adaptPlayerPosition()
+{
+  sf::FloatRect viewBounds(_WorldView.getCenter() - _WorldView.getSize() / 2.f,
+      _WorldView.getSize());
+  const float borderDistance = 40.f;
+
+  sf::Vector2f position = _PlayerAircraft->getPosition();
+  position.x = std::max(position.x, viewBounds.left + borderDistance);
+  position.x = std::min(position.x, viewBounds.left + viewBounds.left +
+      viewBounds.width - borderDistance);
+  position.y = std::max(position.y, viewBounds.top + borderDistance);
+  position.y = std::min(position.y, viewBounds.top +
+      viewBounds.height - borderDistance);
+  _PlayerAircraft->setPosition(position);
+}
+
+void World::adaptPlayerVelocity()
+{
+  sf::Vector2f velocity = _PlayerAircraft->getVelocity();
+
+  //Reduce velocity for diag movement
+  if (velocity.x != 0.f && velocity.y != 0.f)
+    _PlayerAircraft->setVelocity(velocity / std::sqrt(2.f));
+
+  //Add scrolling velocity
+  _PlayerAircraft->accelerate(0.f, _ScrollSpeed);
+}
+
+CommandQueue& World::getCommandQueue()
+{
+  return _CommandQueue;
 }

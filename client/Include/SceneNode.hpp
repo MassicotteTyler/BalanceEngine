@@ -1,5 +1,7 @@
 #ifndef SCENENODE_HPP
 #define SCENENODE_HPP
+#include <Category.hpp>
+#include <Command.hpp>
 
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/System/Time.hpp>
@@ -24,6 +26,8 @@ class SceneNode : public sf::Transformable, public sf::Drawable,
 
     sf::Vector2f getWorldPosition() const;
     sf::Transform getWorldTransform() const;
+    void onCommand(const Command& command, sf::Time dt);
+    virtual unsigned int getCategory() const;
 
   private:
     std::vector<Ptr> children;

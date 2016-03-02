@@ -10,10 +10,13 @@ Game::Game()
   : gWindow(sf::VideoMode(640, 480), "Balance")
   , gWorld(gWindow)
   , font()
+  , _Player()
   , statisticsText()
   , statisticsUpdateTime()
   , statisticsNumFrames(0)
   {
+    gWindow.setKeyRepeatEnabled(false);
+
     font.loadFromFile("assets/fonts/Sansation.ttf");
     statisticsText.setFont(font);
     statisticsText.setPosition(5.f, 5.f);
@@ -31,7 +34,7 @@ void Game::run()
     while (timeSinceLastUpdate > TimePerFrame)
     {
       timeSinceLastUpdate -= TimePerFrame;
-      processEvents();
+      processInputs();
       update(TimePerFrame);
     }
 
@@ -41,30 +44,19 @@ void Game::run()
 }
 
 
-void Game::processEvents()
+void Game::processInputs()
 {
+  CommandQueue& commands = gWorld.getCommandQueue();
+
   sf::Event event;
   while (gWindow.pollEvent(event))
   {
-    switch(event.type)
-    {
-      case sf::Event::KeyPressed:
-        handlePlayerInput(event.key.code, true);
-        break;
-      case sf::Event::KeyReleased:
-        handlePlayerInput(event.key.code, false);
-        break;
-      case sf::Event::Closed:
-        gWindow.close();
-        break;
-      default:
-        break;
-    }
-  }
-}
+    _Player.handleEvent(event, commands);
 
-void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed)
-{
+    if (event.type == sf::Event::Closed)
+      gWindow.close();
+  }
+  _Player.handleRealtimeInput(commands);
 }
 
 void Game::update(sf::Time elaspedTime)

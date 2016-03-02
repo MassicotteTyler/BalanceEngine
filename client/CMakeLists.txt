@@ -4,6 +4,9 @@ include_directories(Include)
 
 add_executable(balance
   src/Aircraft.cpp
+  src/Player.cpp
+  src/CommandQueue.cpp
+  src/Command.cpp
   src/Entity.cpp
   src/Game.cpp
   src/SceneNode.cpp

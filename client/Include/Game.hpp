@@ -2,6 +2,7 @@
 #define GAME_HPP
 
 #include <World.hpp>
+#include <Player.hpp>
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -16,17 +17,17 @@ class Game
     void run();
 
   private:
-    void processEvents();
+    void processInputs();
     void update(sf::Time deltaTime);
     void render();
     void updateStatistics(sf::Time elaspedTime);
-    void handlePlayerInput(sf::Keyboard::Key, bool isPressed);
 
   private:
     static const sf::Time TimePerFrame;
 
     sf::RenderWindow gWindow;
     World gWorld;
+    Player _Player;
 
     sf::Font font;
     sf::Text statisticsText;
