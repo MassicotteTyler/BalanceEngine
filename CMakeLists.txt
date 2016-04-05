@@ -6,7 +6,7 @@ project(Balance VERSION 0.1 LANGUAGES CXX)
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 # Add SFML
-find_package(SFML 2 REQUIRED system window graphics audio)
+find_package(SFML 2 REQUIRED system window graphics audio network)
 
 if(SFML_FOUND)
   include_directories(${SFML_INCLUDE_DIRS})
@@ -17,4 +17,4 @@ add_definitions(-D__GAME_VERSION=${game_VERSION})
 # Enable C++11
 set(CMAKE_CXX_FLAGS "-g --std=c++0x" ${CMAKE_CXX_FLAGS})
 
-add_subdirectory(client)
+add_subdirectory(server)

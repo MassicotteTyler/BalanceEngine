@@ -90,14 +90,15 @@ void Player::initializeActions()
 {
   const float playerSpeed = 200.f;
 
+  //Refactor
   _ActionBinding[MoveLeft].action =
-    derivedAction<Aircraft>(AircraftMover(-playerSpeed, 0.f, -1));
+    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, -1));
   _ActionBinding[MoveRight].action =
-    derivedAction<Aircraft>(AircraftMover(+playerSpeed, 0.f, 1));
+    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, 1));
   _ActionBinding[MoveUp].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, -playerSpeed, 0));
+    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, 0));
   _ActionBinding[MoveDown].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, +playerSpeed, 0));
+    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, 0));
 }
 
 bool Player::isRealtimeAction(Action action)

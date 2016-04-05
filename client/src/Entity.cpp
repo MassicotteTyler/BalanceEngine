@@ -1,4 +1,5 @@
 #include <Entity.hpp>
+#include <iostream>
 
 void Entity::setVelocity(sf::Vector2f nVelocity)
 {
@@ -18,7 +19,11 @@ sf::Vector2f Entity::getVelocity() const
 
 void Entity::updateCurrent(sf::Time dt)
 {
-  move(velocity * dt.asSeconds());
+  float rotation = (this->getRotation() * M_PI) / 180.f;
+  float x = -1 * velocity.x * sin(rotation) * 10.f;
+  float y = velocity.y * cos(rotation) * 10.f;
+  sf::Vector2f vec(x,y);
+  move(vec * dt.asSeconds());
 }
 
 void Entity::accelerate(sf::Vector2f nVelocity)

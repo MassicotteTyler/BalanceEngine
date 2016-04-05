@@ -13,6 +13,7 @@ namespace Textures
     Eagle,
     Raptor,
     Desert,
+    Map,
   };
 }
 

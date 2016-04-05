@@ -45,6 +45,7 @@ void World::loadTextures()
   _Textures.load(Textures::Eagle, "assets/textures/Eagle.png");
   _Textures.load(Textures::Desert, "assets/textures/Desert.png");
   _Textures.load(Textures::Raptor, "assets/textures/Raptor.png");
+  _Textures.load(Textures::Map, "assets/textures/world_large.png");
 }
 void World::buildScene()
 {
@@ -58,8 +59,8 @@ void World::buildScene()
   }
 
   //tiled background
-  sf::Texture& texture = _Textures.get(Textures::Desert);
-  sf::IntRect textureRect(_WorldBounds);
+  sf::Texture& texture = _Textures.get(Textures::Map);
+  sf::IntRect textureRect(0, 0, 6338, 3553);
   texture.setRepeated(true);
 
   //Add background to scene
@@ -73,21 +74,9 @@ void World::buildScene()
         _Textures));
   _PlayerAircraft = leader.get();
   _PlayerAircraft->setPosition(_SpawnPosition);
-  _PlayerAircraft->setVelocity(40.f, _ScrollSpeed);
+  //_PlayerAircraft->setVelocity(40.f, _ScrollSpeed);
+  _PlayerAircraft->setVelocity(0.f, 0.f);
   _SceneLayers[Air]->attachChild(std::move(leader));
-
-  /*
-  //two escort aircrafts
-  std::unique_ptr<Aircraft> leftEscort(new Aircraft(Aircraft::Raptor,
-        _Textures));
-  leftEscort->setPosition(-80.f, 50.f);
-  _PlayerAircraft->attachChild(std::move(leftEscort));
-
-  std::unique_ptr<Aircraft> rightEscort(new Aircraft(Aircraft::Raptor,
-        _Textures));
-  rightEscort->setPosition(80.f, 50.f);
-  _PlayerAircraft->attachChild(std::move(rightEscort));
-  */
 }
 
 void World::adaptPlayerPosition()
@@ -95,17 +84,6 @@ void World::adaptPlayerPosition()
   sf::FloatRect viewBounds(_WorldView.getCenter() - _WorldView.getSize() / 2.f,
       _WorldView.getSize());
   const float borderDistance = 40.f;
-
-  /*
-  sf::Vector2f position = _PlayerAircraft->getPosition();
-  position.x = std::max(position.x, viewBounds.left + borderDistance);
-  position.x = std::min(position.x, viewBounds.left + viewBounds.left +
-      viewBounds.width - borderDistance);
-  position.y = std::max(position.y, viewBounds.top + borderDistance);
-  position.y = std::min(position.y, viewBounds.top +
-      viewBounds.height - borderDistance);
-  _PlayerAircraft->setPosition(position);
-  */
 }
 
 void World::adaptPlayerVelocity()
@@ -117,7 +95,7 @@ void World::adaptPlayerVelocity()
     _PlayerAircraft->setVelocity(velocity / std::sqrt(2.f));
 
   //Add scrolling velocity
-  _PlayerAircraft->accelerate(0.f, _ScrollSpeed);
+  _PlayerAircraft->accelerate(_ScrollSpeed, _ScrollSpeed);
 }
 
 CommandQueue& World::getCommandQueue()
