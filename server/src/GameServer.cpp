@@ -4,6 +4,8 @@
 
 #include <SFML/Network/Packet.hpp>
 
+#include <iostream>
+
 GameServer::RemotePeer::RemotePeer()
   :ready(false)
   ,timedOut(false)
@@ -16,7 +18,7 @@ GameServer::GameServer(sf::Vector2f mapSize)
 , _ListenerState(false)
 , _ClientTimeoutTime(sf::seconds(3.f))
 , _MaxConnectedPlayers(10)
-, _ConnectedPlayers(10)
+, _ConnectedPlayers(0)
 , _WorldHeight(5000.f)
 , _MapRect(0.f, _WorldHeight - mapSize.y, mapSize.x, mapSize.y)
 , _AircraftCount(0)
@@ -26,6 +28,7 @@ GameServer::GameServer(sf::Vector2f mapSize)
 , _LastSpawnTime(sf::Time::Zero)
 , _TimeForNextSpawn(sf::seconds(5.f))
 {
+  std::cout << "GameServer created" << std::endl;
   _ListenerSocket.setBlocking(false);
   _Peers[0].reset(new RemotePeer());
   _Thread.launch();
@@ -150,6 +153,7 @@ void GameServer::tick()
   //Detect collision and destroy
 
   //Respawn after destruction
+  std::cout << "Tick" << std::endl;
 }
 
 sf::Time GameServer::now() const
