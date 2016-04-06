@@ -10,6 +10,7 @@ namespace Category
     PlayerAircraft = 1 << 1,
     AlliedAircraft = 1 << 2,
     EnemyAircraft = 1 << 3,
+    Network = 1 << 4,
   };
 }
 #endif

@@ -19,9 +19,12 @@ class Aircraft : public Entity
     virtual void drawCurrent(sf::RenderTarget& target,
                              sf::RenderStates states) const;
     virtual unsigned int getCategory() const;
+    void setIdentifier(int identifier);
+    int getIdentifier();
 
   private:
     Type _Type;
     sf::Sprite _Sprite;
+    int _Identifier;
 };
 #endif

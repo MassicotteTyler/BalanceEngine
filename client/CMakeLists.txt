@@ -8,10 +8,12 @@ add_executable(balance
   src/CommandQueue.cpp
   src/Command.cpp
   src/Entity.cpp
-  src/Game.cpp
   src/SceneNode.cpp
   src/SpriteNode.cpp
+  src/Utility.cpp
+  src/NetworkNode.cpp
   src/World.cpp
+  src/GameClient.cpp
   src/Main.cpp)
 
 target_link_libraries(balance

@@ -42,3 +42,13 @@ unsigned int Aircraft::getCategory() const
       return Category::EnemyAircraft;
   }
 }
+
+void Aircraft::setIdentifier(int identifier)
+{
+  _Identifier = identifier;
+}
+
+int Aircraft::getIdentifier()
+{
+  return _Identifier;
+}

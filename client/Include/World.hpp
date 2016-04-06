@@ -8,7 +8,8 @@
 #include <Aircraft.hpp>
 #include <Command.hpp>
 #include <CommandQueue.hpp>
-
+#include <NetworkProtocol.hpp>
+#include <NetworkNode.hpp>
 
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -30,6 +31,13 @@ class World : private sf::NonCopyable
     void update(sf::Time dt);
     void draw();
     CommandQueue& getCommandQueue();
+    Aircraft* addAircraft(int identifier);
+    void removeAircraft(int identifier);
+    void setWorldHeight(float height);
+
+    Aircraft* getAircraft(int identifier) const;
+    sf::FloatRect getWorldBounds() const;
+    bool pollGameAction(GameActions::Action& out);
 
   private:
     void loadTextures();
@@ -57,6 +65,9 @@ class World : private sf::NonCopyable
     sf::FloatRect _WorldBounds;
     sf::Vector2f _SpawnPosition;
     float _ScrollSpeed;
+    NetworkNode* _NetworkNode;
+
     Aircraft* _PlayerAircraft;
+    std::vector<Aircraft*> _PlayerAircrafts;
 };
 #endif

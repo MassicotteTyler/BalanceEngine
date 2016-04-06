@@ -3,16 +3,16 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 World::World(sf::RenderWindow& window)
-: _Window(window)
-, _WorldView(window.getDefaultView())
-, _Textures()
-, _SceneGraph()
-, _SceneLayers()
-, _WorldBounds(0.f, 0.f, _WorldView.getSize().x, 2000.f)
-, _SpawnPosition(_WorldView.getSize().x / 2.f,
-    _WorldBounds.height - _WorldView.getSize().y / 2.f)
-, _ScrollSpeed(-50.f)
-, _PlayerAircraft(nullptr)
+  : _Window(window)
+  , _WorldView(window.getDefaultView())
+  , _Textures()
+  , _SceneGraph()
+  , _SceneLayers()
+  , _WorldBounds(0.f, 0.f, _WorldView.getSize().x, 2000.f)
+    , _SpawnPosition(_WorldView.getSize().x / 2.f,
+        _WorldBounds.height - _WorldView.getSize().y / 2.f)
+  , _ScrollSpeed(-50.f)
+  , _PlayerAircraft(nullptr)
 {
   loadTextures();
   buildScene();
@@ -101,4 +101,47 @@ void World::adaptPlayerVelocity()
 CommandQueue& World::getCommandQueue()
 {
   return _CommandQueue;
+}
+
+bool World::pollGameAction(GameActions::Action& out)
+{
+  return _NetworkNode->pollGameAction(out);
+}
+
+Aircraft* World::getAircraft(int identifier) const
+{
+  for (Aircraft* a : _PlayerAircrafts)
+  {
+    if (a->getIdentifier() == identifier)
+      return a;
+  }
+  return nullptr;
+}
+
+Aircraft* World::addAircraft(int identifier)
+{
+  std::unique_ptr<Aircraft> player(new Aircraft(Aircraft::Eagle, _Textures));
+    //Todo make random spawn
+  player->setPosition(_WorldView.getCenter());
+  player->setIdentifier(identifier);
+
+  _PlayerAircrafts.push_back(player.get());
+  _SceneLayers[Air]->attachChild(std::move(player));
+  return _PlayerAircrafts.back();
+}
+
+void World::removeAircraft(int identifier)
+{
+  Aircraft* aircraft = getAircraft(identifier);
+  if (aircraft)
+  {
+    //aircraft->destroy();
+    _PlayerAircrafts.erase(std::find(_PlayerAircrafts.begin(),
+          _PlayerAircrafts.end(), aircraft));
+  }
+}
+
+void World::setWorldHeight(float height)
+{
+  _WorldBounds.height = height;
 }

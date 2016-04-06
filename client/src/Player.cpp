@@ -1,7 +1,9 @@
 #include <Player.hpp>
 #include <CommandQueue.hpp>
 #include <Aircraft.hpp>
+#include <NetworkProtocol.hpp>
 
+#include <SFML/Network/Packet.hpp>
 #include <map>
 #include <string>
 #include <algorithm>
@@ -28,7 +30,9 @@ struct AircraftMover
   int direction;
 };
 
-Player::Player()
+Player::Player(sf::TcpSocket* socket, sf::Int32 id)
+:_Socket(socket)
+,_Identifier(id)
 {
   _KeyBinding[sf::Keyboard::Left] = MoveLeft;
   _KeyBinding[sf::Keyboard::Right] = MoveRight;
@@ -113,4 +117,29 @@ bool Player::isRealtimeAction(Action action)
     default:
       return false;
   }
+}
+
+void Player::disableAllRealtimeActions()
+{
+  for (auto& action : _ActionProxies)
+  {
+    sf::Packet packet;
+    packet << static_cast<sf::Int32>(Client::PlayerRealtimeChange);
+    packet << _Identifier;
+    packet << static_cast<sf::Int32>(action.first);
+    packet << false;
+    _Socket->send(packet);
+  }
+}
+
+void Player::handleNetworkEvent(Action action,
+    CommandQueue& commands)
+{
+  commands.push(_ActionBinding[action]);
+}
+
+void Player::handleNetworkRealtimeChange(Action action,
+    bool actionEnabled)
+{
+  _ActionProxies[action] = actionEnabled;
 }

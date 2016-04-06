@@ -1,14 +1,17 @@
-#include <Game.hpp>
-
+#include <GameClient.hpp>
 #include <stdexcept>
 #include <iostream>
 
-int main()
+int main(int argc, char *argv[])
 {
+  if (argc < 2)
+  {
+    std::cout << "Usage: game IP_ADDRESS " << std::endl;
+    return(1);
+  }
   try
   {
-    Game game;
-    game.run();
+    GameClient gc(argv[1]);
   }
   catch (std::exception& e)
   {

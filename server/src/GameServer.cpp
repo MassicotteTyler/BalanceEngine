@@ -153,7 +153,6 @@ void GameServer::tick()
   //Detect collision and destroy
 
   //Respawn after destruction
-  std::cout << "Tick" << std::endl;
 }
 
 sf::Time GameServer::now() const
@@ -307,6 +306,7 @@ void GameServer::handleIncomingConnections()
   if (_ListenerSocket.accept(_Peers[_ConnectedPlayers]->socket)
       == sf::TcpListener::Done);
   {
+    std::cout << "Client connected" << std::endl;
     _AircraftInfo[_AircraftIdentifierCounter].position =
       sf::Vector2f(0, 0);
 
