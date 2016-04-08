@@ -29,7 +29,7 @@ GameServer::GameServer(sf::Vector2f mapSize)
 , _TimeForNextSpawn(sf::seconds(5.f))
 {
   std::cout << "GameServer created" << std::endl;
-  _ListenerSocket.setBlocking(false);
+  _ListenerSocket.setBlocking(true);
   _Peers[0].reset(new RemotePeer());
   _Thread.launch();
 }
@@ -171,6 +171,7 @@ void GameServer::handleIncomingPackets()
       sf::Packet packet;
       while (peer->socket.receive(packet) == sf::Socket::Done)
       {
+        std::cout << "Handle clients packet" << std::endl;
         //Interpret packet and react to it
         handleIncomingPacket(packet, *peer, detectedTimeout);
 
@@ -196,7 +197,7 @@ void GameServer::handleIncomingPacket(sf::Packet& packet,
 {
   sf::Int32 packetType;
   packet >> packetType;
-
+  std::cout << packetType << std::endl;
   switch (packetType)
   {
     case Client::Quit:
@@ -223,6 +224,7 @@ void GameServer::handleIncomingPacket(sf::Packet& packet,
 
     case Client::RequestConnection:
       {
+        std::cout << "Client trying to connect" << std::endl;
         receivingPeer.aircraftIdentifiers.push_back(
             _AircraftIdentifierCounter);
         _AircraftInfo[_AircraftIdentifierCounter].position =
@@ -244,7 +246,8 @@ void GameServer::handleIncomingPacket(sf::Packet& packet,
           if (peer.get() != &receivingPeer && peer->ready)
           {
             sf::Packet notifyPacket;
-            notifyPacket << static_cast<sf::Int32>(Server::PlayerConnect);
+            notifyPacket <<
+              static_cast<sf::Int32>(Server::PlayerConnect);
             notifyPacket << _AircraftIdentifierCounter;
             notifyPacket <<
               _AircraftInfo[_AircraftIdentifierCounter].position.x;
@@ -306,7 +309,7 @@ void GameServer::handleIncomingConnections()
   if (_ListenerSocket.accept(_Peers[_ConnectedPlayers]->socket)
       == sf::TcpListener::Done);
   {
-    std::cout << "Client connected" << std::endl;
+    std::cout << "Incoming connection" << std::endl;
     _AircraftInfo[_AircraftIdentifierCounter].position =
       sf::Vector2f(0, 0);
 
@@ -334,10 +337,12 @@ void GameServer::handleIncomingConnections()
     else
       _Peers.push_back(PeerPtr(new RemotePeer()));
   }
+
 }
 
 void GameServer::handleDisconnections()
 {
+  std::cout << "Handle disconnect" << std::endl;
   for (auto itr = _Peers.begin(); itr != _Peers.end(); )
   {
     if ((*itr)->timedOut)
@@ -378,8 +383,10 @@ void GameServer::informWorldState(sf::TcpSocket& socket)
   packet << _WorldHeight << _MapRect.top + _MapRect.height;
   packet << static_cast<sf::Int32>(_AircraftCount);
 
+  std::cout << "Update client world" << std::endl;
   for (std::size_t i = 0; i < _ConnectedPlayers; ++i)
   {
+    std::cout << "Updating Player: " << i << std::endl;
     if (_Peers[i]->ready)
     {
       for (sf::Int32 identifier : _Peers[i]->aircraftIdentifiers)

@@ -18,6 +18,28 @@ GameClient::GameClient(std::string ipAddress)
   {
     connected = true;
     std::cout << "Connected to server!" << std::endl;
+    sf::Time TimePerFrame = sf::seconds(1.f/60.f);
+    while(connected)
+    {
+      sf::Clock clock;
+      sf::Time timeSinceLastUpdate = sf::Time::Zero;
+      while(_Window.isOpen())
+      {
+        sf::Time elaspedTime = clock.restart();
+        timeSinceLastUpdate += elaspedTime;
+        while (timeSinceLastUpdate > TimePerFrame)
+        {
+          timeSinceLastUpdate -= TimePerFrame;
+          update(TimePerFrame);
+        }
+
+        draw();
+        std::cout << "Should display" << std::endl;
+        _Window.display();
+      }
+      std::cout << "RIP" << std::endl;
+
+    }
   }
   else
   {
@@ -37,11 +59,12 @@ void GameClient::draw()
 
     _Window.setView(_Window.getDefaultView());
 
-    if(!_Broadcasts.empty())
-      _Window.draw(_BroadcastText);
+  //  if(!_Broadcasts.empty())
+    //  _Window.draw(_BroadcastText);
   }
-  else
-    _Window.draw(_FailedConnectionText);
+  //else
+    //_Window.draw(_FailedConnectionText);
+    
 }
 
 void GameClient::onActivate()
@@ -63,6 +86,7 @@ bool GameClient::update(sf::Time dt)
 {
   if (connected)
   {
+    std::cout <<"Test" << std::endl;
     _World.update(dt);
 
     //Destroy planes
@@ -199,6 +223,7 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
 {
   switch(packetType)
   {
+    std::cout << "Test" << std::endl;
     case Server::BroadcastMessage:
       {
         std::string message;
