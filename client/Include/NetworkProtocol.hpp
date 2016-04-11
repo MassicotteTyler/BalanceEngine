@@ -58,11 +58,10 @@ namespace GameActions
     }
 
     Action(Type type, sf::Vector2f position)
-      :type(type)
-      , position(position)
+    : type(type)
+    ,position(position)
     {
     }
-
     Type type;
     sf::Vector2f position;
   };

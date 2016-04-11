@@ -47,7 +47,7 @@ GameClient::GameClient(std::string ipAddress)
     _FailedConnectionClock.restart();
   }
 
-  _Socket.setBlocking(false);
+  _Socket.setBlocking(true);
 
 }
 
@@ -86,7 +86,6 @@ bool GameClient::update(sf::Time dt)
 {
   if (connected)
   {
-    std::cout <<"Test" << std::endl;
     _World.update(dt);
 
     //Destroy planes

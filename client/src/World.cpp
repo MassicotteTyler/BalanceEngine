@@ -13,6 +13,7 @@ World::World(sf::RenderWindow& window)
         _WorldBounds.height - _WorldView.getSize().y / 2.f)
   , _ScrollSpeed(-50.f)
   , _PlayerAircraft(nullptr)
+  ,_PlayerAircrafts()
 {
   loadTextures();
   buildScene();

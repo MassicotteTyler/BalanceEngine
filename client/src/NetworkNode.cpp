@@ -1,6 +1,8 @@
 #include <NetworkNode.hpp>
 #include <NetworkProtocol.hpp>
 
+#include <iostream>
+
 NetworkNode::NetworkNode()
   :SceneNode()
   ,_PendingActions()
@@ -29,7 +31,8 @@ bool NetworkNode::pollGameAction(GameActions::Action& out)
   else
   {
     out = _PendingActions.front();
-    _PendingActions.pop();
+    std::cout << out.type << std::endl;
+   // _PendingActions.pop();
     return true;
   }
 }
