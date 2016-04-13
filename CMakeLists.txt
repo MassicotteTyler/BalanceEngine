@@ -15,7 +15,7 @@ endif()
 add_definitions(-D__GAME_VERSION=${game_VERSION})
 
 # Enable C++11
-set(CMAKE_CXX_FLAGS "-ggdb --std=c++0x" ${CMAKE_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS "-g --std=c++0x" ${CMAKE_CXX_FLAGS})
 
 add_subdirectory(client)
-add_subdirectory(server)
+#add_subdirectory(server)

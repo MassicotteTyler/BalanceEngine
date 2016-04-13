@@ -26,18 +26,23 @@ class GameClient
   private:
     void updateBroadcastMessage(sf::Time elapsedTime);
     void handlePacket(sf::Int32 packetType, sf::Packet& packet);
+    void processInputs();
 
   private:
     typedef std::unique_ptr<Player> PlayerPtr;
+    PlayerPtr _Player;
     World _World;
     sf::RenderWindow _Window;
     std::string ip;
+    static const sf::Time TimePerFrame;
     //TextureHolder& _TextureHolder;
 
-    std::map<int, PlayerPtr> _Players;
-    std::vector<sf::Int32> _LocalPlayerIdentifiers;
+    //std::map<int, PlayerPtr> _Players;
+    sf::Int32 _LocalPlayerID;
     sf::TcpSocket _Socket;
     bool connected;
+    bool playerReady;
+    bool worldReady;
     sf::Clock _TickClock;
 
     std::vector<std::string> _Broadcasts;

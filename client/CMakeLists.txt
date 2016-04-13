@@ -14,6 +14,7 @@ add_executable(balance
   src/NetworkNode.cpp
   src/World.cpp
   src/GameClient.cpp
+  src/GameServer.cpp
   src/Main.cpp)
 
 target_link_libraries(balance

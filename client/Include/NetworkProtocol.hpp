@@ -4,7 +4,7 @@
 #include <SFML/Config.hpp>
 #include <SFML/System/Vector2.hpp>
 
-const unsigned short ServerPort = 5000;
+const unsigned short ServerPort = 7777;
 
 namespace Server
 {

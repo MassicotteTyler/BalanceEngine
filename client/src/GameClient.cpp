@@ -1,70 +1,89 @@
 #include <GameClient.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Network/IpAddress.hpp>
 
 #include <iostream>
+const sf::Time GameClient::TimePerFrame = sf::seconds(1.f/60.f);
+
 GameClient::GameClient(std::string ipAddress)
   :_Window(sf::VideoMode(640, 480), "Balance")
   ,_World(_Window)
   ,connected(false)
+  ,playerReady(false)
+  ,worldReady(false)
   ,_HasFocus(true)
   ,_Active(true)
   ,_ClientTimeout(sf::seconds(2.f))
    ,_TimeSinceLastPacket(sf::seconds(0.f))
 {
-  ip = ipAddress;
-  if (_Socket.connect(ip, 5000, sf::seconds(5.f))
-      == sf::TcpSocket::Done)
+  //Request connection
+  //Connect and game Aircraft ID
+  //Pass ID and plane to world
+  //Get all other aircrafts
+  //Loop, update, render
+
+  if (_Socket.connect(ipAddress, ServerPort, sf::seconds(5.f))
+          == sf::TcpSocket::Done)
   {
     connected = true;
-    std::cout << "Connected to server!" << std::endl;
-    sf::Time TimePerFrame = sf::seconds(1.f/60.f);
-    while(connected)
+    while (!playerReady)
     {
-      sf::Clock clock;
-      sf::Time timeSinceLastUpdate = sf::Time::Zero;
-      while(_Window.isOpen())
+      //  _Socket.setBlocking(true);
+      sf::Packet packet;
+      if (_Socket.receive(packet) == sf::Socket::Done)
       {
-        sf::Time elaspedTime = clock.restart();
-        timeSinceLastUpdate += elaspedTime;
-        while (timeSinceLastUpdate > TimePerFrame)
-        {
-          timeSinceLastUpdate -= TimePerFrame;
-          update(TimePerFrame);
-        }
-
-        draw();
-        std::cout << "Should display" << std::endl;
-        _Window.display();
+        _TimeSinceLastPacket = sf::seconds(0.f);
+        sf::Int32 packetType;
+        packet >> packetType;
+        handlePacket(packetType, packet);
       }
-      std::cout << "RIP" << std::endl;
 
     }
+    //_Socket.setBlocking(false);
   }
-  else
+
+  sf::Clock clock;
+  sf::Time timeSinceLastUpdate = sf::Time::Zero;
+  while (_Window.isOpen())
   {
-    std::cout << "Could not connect to server" << std::endl;
-    _FailedConnectionClock.restart();
+    sf::Time elapsedTime = clock.restart();
+    timeSinceLastUpdate += elapsedTime;
+    while(timeSinceLastUpdate > TimePerFrame)
+    {
+      timeSinceLastUpdate -= TimePerFrame;
+      processInputs();
+      update(TimePerFrame);
+    }
+
+    draw();
   }
-
-  _Socket.setBlocking(true);
-
 }
 
+void GameClient::processInputs()
+{
+  CommandQueue& commands = _World.getCommandQueue();
+
+  sf::Event event;
+  while(_Window.pollEvent(event))
+  {
+    if (event.type == sf::Event::Closed)
+      _Window.close();
+    else
+      handleEvent(event);
+  }
+}
 void GameClient::draw()
 {
-  if (connected)
-  {
-    _World.draw();
-
-    _Window.setView(_Window.getDefaultView());
+  _Window.clear(sf::Color::Black);
+  _World.draw();
+  _Window.display();
+  //_Window.setView(_Window.getDefaultView());
 
   //  if(!_Broadcasts.empty())
-    //  _Window.draw(_BroadcastText);
-  }
+  //  _Window.draw(_BroadcastText);
   //else
     //_Window.draw(_FailedConnectionText);
-    
 }
 
 void GameClient::onActivate()
@@ -84,7 +103,7 @@ void GameClient::onDestroy()
 
 bool GameClient::update(sf::Time dt)
 {
-  if (connected)
+  if (connected && worldReady && playerReady)
   {
     _World.update(dt);
 
@@ -93,8 +112,7 @@ bool GameClient::update(sf::Time dt)
     if (_Active && _HasFocus)
     {
       CommandQueue& commands = _World.getCommandQueue();
-      for (auto& pair : _Players)
-        pair.second->handleRealtimeInput(commands);
+      _Player->handleRealtimeInput(commands);
     }
 
     //Handle network input
@@ -123,19 +141,7 @@ bool GameClient::update(sf::Time dt)
       }
     }
 
-    updateBroadcastMessage(dt);
-
-    GameActions::Action gameAction;
-    while (_World.pollGameAction(gameAction))
-    {
-      sf::Packet packet;
-      packet << static_cast<sf::Int32>(Client::GameEvent);
-      packet << static_cast<sf::Int32>(gameAction.type);
-      packet << gameAction.position.x;
-      packet << gameAction.position.y;
-
-      _Socket.send(packet);
-    }
+    //updateBroadcastMessage(dt);
 
     if (_TickClock.getElapsedTime() > sf::seconds(1.f / 20.f))
     {
@@ -143,12 +149,11 @@ bool GameClient::update(sf::Time dt)
       positionUpdatePacket <<
         static_cast<sf::Int32>(Client::PositionUpdate);
 
-      for (sf::Int32 identifier : _LocalPlayerIdentifiers)
-      {
-        if (Aircraft* aircraft = _World.getAircraft(identifier))
-          positionUpdatePacket << identifier << aircraft->getPosition().x
-            << aircraft->getPosition().y;
-      }
+      Aircraft* aircraft  = _World.getAircraft(_LocalPlayerID);
+      if (aircraft)
+        return false;
+      positionUpdatePacket << _LocalPlayerID << aircraft->getPosition().x
+        << aircraft->getPosition().y << aircraft->getRotation();
 
       _Socket.send(positionUpdatePacket);
       _TickClock.restart();
@@ -168,8 +173,7 @@ bool GameClient::update(sf::Time dt)
 void GameClient::disableAllRealtimeActions()
 {
   _Active = false;
-  for (sf::Int32 identifier : _LocalPlayerIdentifiers)
-    _Players[identifier]->disableAllRealtimeActions();
+  _Player->disableAllRealtimeActions();
 }
 
 bool GameClient::handleEvent(const sf::Event& event)
@@ -177,14 +181,14 @@ bool GameClient::handleEvent(const sf::Event& event)
   //Input handling
   CommandQueue& commands = _World.getCommandQueue();
 
-  for (auto& pair : _Players)
-  {
-    pair.second->handleEvent(event, commands);
-  }
 
+  if (event.type == sf::Event::Closed)
+  {
+    _Window.close();
+  }
   if (event.type == sf::Event::KeyPressed)
   {
-
+    _Player->handleEvent(event, commands);
   }
   else if (event.type == sf::Event::GainedFocus)
   {
@@ -222,7 +226,6 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
 {
   switch(packetType)
   {
-    std::cout << "Test" << std::endl;
     case Server::BroadcastMessage:
       {
         std::string message;
@@ -238,7 +241,7 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
       } break;
 
     case Server::SpawnPlayer:
-      {
+    {
         sf::Int32 aircraftIdentifier;
         sf::Vector2f aircraftPosition;
         packet >> aircraftIdentifier >> aircraftPosition.x >>
@@ -247,10 +250,9 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
         Aircraft* aircraft = _World.addAircraft(aircraftIdentifier);
         aircraft->setPosition(aircraftPosition);
 
-        _Players[aircraftIdentifier].reset(new Player(&_Socket,
-              aircraftIdentifier));
-        _LocalPlayerIdentifiers.push_back(aircraftIdentifier);
-
+        _Player.reset(new Player(&_Socket, aircraftIdentifier));
+        _LocalPlayerID = aircraftIdentifier;
+        playerReady = true;
         //Gamestarted
       }break;
 
@@ -258,14 +260,13 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
       {
         sf::Int32 aircraftIdentifier;
         sf::Vector2f aircraftPosition;
+        float angle;
         packet >> aircraftIdentifier >> aircraftPosition.x
-          >> aircraftPosition.y;
+          >> aircraftPosition.y >> angle;
 
         Aircraft* aircraft = _World.addAircraft(aircraftIdentifier);
         aircraft->setPosition(aircraftPosition);
-
-        _Players[aircraftIdentifier].reset(new Player(&_Socket,
-              aircraftIdentifier));
+        aircraft->setRotation(angle);
       } break;
 
     case Server::PlayerDisconnect:
@@ -273,31 +274,27 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
         sf::Int32 aircraftIdentifier;
         packet >> aircraftIdentifier;
         _World.removeAircraft(aircraftIdentifier);
-        _Players.erase(aircraftIdentifier);
       } break;
 
     case Server::InitialState:
       {
         sf::Int32 aircraftCount;
-        float worldHeight;
-        packet >> worldHeight;
-
-        _World.setWorldHeight(worldHeight);
-
         packet >> aircraftCount;
+
         for (sf::Int32 i = 0; i < aircraftCount; ++i)
         {
           sf::Int32 aircraftIdentifier;
           sf::Vector2f aircraftPosition;
+          float rotation;
+
           packet >> aircraftIdentifier >> aircraftPosition.x >>
-            aircraftPosition.y;
+            aircraftPosition.y >> rotation;
 
           Aircraft* aircraft = _World.addAircraft(aircraftIdentifier);
           aircraft->setPosition(aircraftPosition);
-
-          _Players[aircraftIdentifier].reset(new Player(&_Socket,
-                aircraftIdentifier));
+          aircraft->setRotation(rotation);
         }
+        std::cout << "Aircraft Updated" << std::endl;
       }break;
 
     case Server::PlayerEvent:
@@ -305,11 +302,6 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
         sf::Int32 aircraftIdentifier;
         sf::Int32 action;
         packet >> aircraftIdentifier >> action;
-
-        auto itr = _Players.find(aircraftIdentifier);
-        if (itr != _Players.end())
-          itr->second->handleNetworkEvent(
-              static_cast<Player::Action>(action), _World.getCommandQueue());
       }break;
 
     case Server::PlayerRealtimeChange:
@@ -317,34 +309,28 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
         sf::Int32 aircraftIdentifier, action;
         bool actionEnabled;
         packet >> aircraftIdentifier >> action >> actionEnabled;
-
-        auto itr = _Players.find(aircraftIdentifier);
-        if (itr != _Players.end())
-          itr->second->handleNetworkRealtimeChange(
-              static_cast<Player::Action>(action), actionEnabled);
       } break;
 
     case Server::UpdateClientState:
       {
-        float currentWorldPosition;
         sf::Int32 aircraftCount;
-        packet >> currentWorldPosition >> aircraftCount;
+        packet >> aircraftCount;
 
         //Get view position and set view position
-
-
         for (sf::Int32 i = 0; i < aircraftCount; ++i)
         {
           sf::Vector2f aircraftPosition;
           sf::Int32 aircraftIdentifier;
+          float rotation;
           packet >> aircraftIdentifier >> aircraftPosition.x >>
-            aircraftPosition.y;
+            aircraftPosition.y >> rotation;
 
           Aircraft* aircraft = _World.getAircraft(aircraftIdentifier);
           if(aircraft)
           {
             sf::Vector2f interPosition = aircraft->getPosition() +
               (aircraftPosition - aircraft->getPosition()) * 1.0f;
+            aircraft->setRotation(rotation);
             aircraft->setPosition(interPosition);
           }
         }

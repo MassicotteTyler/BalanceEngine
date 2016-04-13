@@ -14,20 +14,19 @@
 
 struct AircraftMover
 {
-  AircraftMover(float vx, float vy, int nDirection)
-    :velocity(vx, vy),
-    direction(nDirection)
+  AircraftMover(int nDirection, int identifier)
+    :direction(nDirection)
+    ,aircraftID(identifier)
   {
   }
 
   void operator() (Aircraft& aircraft, sf::Time) const
   {
     aircraft.rotate(ROTATE_SPEED * direction);
-    aircraft.accelerate(velocity);
+    aircraft.accelerate(0, 0);
   }
-
-  sf::Vector2f velocity;
   int direction;
+  int aircraftID;
 };
 
 Player::Player(sf::TcpSocket* socket, sf::Int32 id)
@@ -36,8 +35,6 @@ Player::Player(sf::TcpSocket* socket, sf::Int32 id)
 {
   _KeyBinding[sf::Keyboard::Left] = MoveLeft;
   _KeyBinding[sf::Keyboard::Right] = MoveRight;
-  _KeyBinding[sf::Keyboard::Up] =  MoveUp;
-  _KeyBinding[sf::Keyboard::Down] = MoveDown;
 
   initializeActions();
 
@@ -96,13 +93,9 @@ void Player::initializeActions()
 
   //Refactor
   _ActionBinding[MoveLeft].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, -1));
+    derivedAction<Aircraft>(AircraftMover(-1, _Identifier));
   _ActionBinding[MoveRight].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, 1));
-  _ActionBinding[MoveUp].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, 0));
-  _ActionBinding[MoveDown].action =
-    derivedAction<Aircraft>(AircraftMover(0.f, 0.f, 0));
+    derivedAction<Aircraft>(AircraftMover(1, _Identifier));
 }
 
 bool Player::isRealtimeAction(Action action)
@@ -111,8 +104,6 @@ bool Player::isRealtimeAction(Action action)
   {
     case MoveLeft:
     case MoveRight:
-    case MoveDown:
-    case MoveUp:
       return true;
     default:
       return false;

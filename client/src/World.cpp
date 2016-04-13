@@ -24,15 +24,18 @@ World::World(sf::RenderWindow& window)
 void World::update(sf::Time dt)
 {
   //_WorldView.move(0.f, _ScrollSpeed * dt.asSeconds());
-  _WorldView.setCenter(_PlayerAircraft->getPosition());
-  _PlayerAircraft->setVelocity(0.f, 0.f);
+  //_WorldView.setCenter(_PlayerAircraft->getPosition());
+  //_PlayerAircraft->setVelocity(0.f, 0.f);
+
+  for (Aircraft* a : _PlayerAircrafts)
+    a->setVelocity(0.f, 0.f);
 
   while(!_CommandQueue.isEmpty())
     _SceneGraph.onCommand(_CommandQueue.pop(), dt);
   adaptPlayerVelocity();
 
   _SceneGraph.update(dt);
-  adaptPlayerPosition();
+//  adaptPlayerPosition();
 }
 
 void World::draw()
@@ -70,14 +73,6 @@ void World::buildScene()
   backgroundSprite->setPosition(_WorldBounds.left, _WorldBounds.top);
   _SceneLayers[Background]->attachChild(std::move(backgroundSprite));
 
-  //Add player's aircraft
-  std::unique_ptr<Aircraft> leader(new Aircraft(Aircraft::Eagle,
-        _Textures));
-  _PlayerAircraft = leader.get();
-  _PlayerAircraft->setPosition(_SpawnPosition);
-  //_PlayerAircraft->setVelocity(40.f, _ScrollSpeed);
-  _PlayerAircraft->setVelocity(0.f, 0.f);
-  _SceneLayers[Air]->attachChild(std::move(leader));
 }
 
 void World::adaptPlayerPosition()
@@ -89,14 +84,9 @@ void World::adaptPlayerPosition()
 
 void World::adaptPlayerVelocity()
 {
-  sf::Vector2f velocity = _PlayerAircraft->getVelocity();
-
-  //Reduce velocity for diag movement
-  if (velocity.x != 0.f && velocity.y != 0.f)
-    _PlayerAircraft->setVelocity(velocity / std::sqrt(2.f));
-
-  //Add scrolling velocity
-  _PlayerAircraft->accelerate(_ScrollSpeed, _ScrollSpeed);
+  //_PlayerAircraft->accelerate(_ScrollSpeed, _ScrollSpeed);
+  for (Aircraft* a : _PlayerAircrafts)
+    a->accelerate(_ScrollSpeed, _ScrollSpeed);
 }
 
 CommandQueue& World::getCommandQueue()
@@ -121,7 +111,8 @@ Aircraft* World::getAircraft(int identifier) const
 
 Aircraft* World::addAircraft(int identifier)
 {
-  std::unique_ptr<Aircraft> player(new Aircraft(Aircraft::Eagle, _Textures));
+  std::unique_ptr<Aircraft> player(
+      new Aircraft(Aircraft::Eagle, _Textures));
     //Todo make random spawn
   player->setPosition(_WorldView.getCenter());
   player->setIdentifier(identifier);

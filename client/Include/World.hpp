@@ -68,6 +68,7 @@ class World : private sf::NonCopyable
     NetworkNode* _NetworkNode;
 
     Aircraft* _PlayerAircraft;
+    sf::Int32 _LocalPlayerID;
     std::vector<Aircraft*> _PlayerAircrafts;
 };
 #endif

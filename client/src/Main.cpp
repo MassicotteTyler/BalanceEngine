@@ -1,17 +1,20 @@
 #include <GameClient.hpp>
+#include <GameServer.hpp>
 #include <stdexcept>
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
-  if (argc < 2)
-  {
-    std::cout << "Usage: game IP_ADDRESS " << std::endl;
-    return(1);
-  }
   try
   {
-    GameClient gc(argv[1]);
+    if (argc < 2)
+    {
+      GameServer gs(sf::Vector2f(3000, 3000));
+    }
+    else
+    {
+      GameClient gc(argv[1]);
+    }
   }
   catch (std::exception& e)
   {

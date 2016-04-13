@@ -32,7 +32,7 @@ bool NetworkNode::pollGameAction(GameActions::Action& out)
   {
     out = _PendingActions.front();
     std::cout << out.type << std::endl;
-   // _PendingActions.pop();
+    _PendingActions.pop();
     return true;
   }
 }

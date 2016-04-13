@@ -19,8 +19,9 @@ Textures::ID toTextureID(Aircraft::Type type)
 
 Aircraft::Aircraft(Type type, const TextureHolder& textures)
 : _Type(type)
-, _Sprite(textures.get(toTextureID(type)))
+, _Sprite((sf::Texture&)textures.get(toTextureID(type)))
 {
+  _Sprite.setTexture(textures.get(toTextureID(type)));
   sf::FloatRect bounds = _Sprite.getLocalBounds();
   _Sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
 }
