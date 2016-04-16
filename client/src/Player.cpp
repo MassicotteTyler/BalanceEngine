@@ -24,6 +24,7 @@ struct AircraftMover
   {
     aircraft.rotate(ROTATE_SPEED * direction);
     aircraft.accelerate(0, 0);
+    std::cout << "Player moving " << direction << std::endl;
   }
   int direction;
   int aircraftID;
@@ -48,7 +49,7 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
   {
     //Check bindings for key pressed
     auto found = _KeyBinding.find(event.key.code);
-    if (found != _KeyBinding.end() && !isRealtimeAction(found->second))
+    if (found != _KeyBinding.end())
       commands.push(_ActionBinding[found->second]);
   }
 }
@@ -57,8 +58,7 @@ void Player::handleRealtimeInput(CommandQueue& commands)
 {
   for (auto pair: _KeyBinding)
   {
-    if (sf::Keyboard::isKeyPressed(pair.first)
-        && isRealtimeAction(pair.second))
+    if (sf::Keyboard::isKeyPressed(pair.first))
       commands.push(_ActionBinding[pair.second]);
 
   }

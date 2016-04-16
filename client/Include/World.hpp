@@ -14,6 +14,7 @@
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 
 #include <array>
 #include <queue>
@@ -21,13 +22,14 @@
 
 namespace sf
 {
-  class RenderWindow;
+  class RenderTarget;
+  class RenderTexture;
 }
 
 class World : private sf::NonCopyable
 {
   public:
-    explicit World(sf::RenderWindow& window);
+    explicit World(sf::RenderTarget& window);
     void update(sf::Time dt);
     void draw();
     CommandQueue& getCommandQueue();
@@ -54,8 +56,9 @@ class World : private sf::NonCopyable
     };
 
   private:
-    sf::RenderWindow& _Window;
+    sf::RenderTarget& _Window;
     sf::View _WorldView;
+    sf::RenderTexture sceneTex;
     TextureHolder _Textures;
 
     SceneNode _SceneGraph;

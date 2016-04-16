@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
-World::World(sf::RenderWindow& window)
+World::World(sf::RenderTarget& window)
   : _Window(window)
   , _WorldView(window.getDefaultView())
   , _Textures()
@@ -15,10 +15,12 @@ World::World(sf::RenderWindow& window)
   , _PlayerAircraft(nullptr)
   ,_PlayerAircrafts()
 {
+  sceneTex.create(640, 480);
   loadTextures();
   buildScene();
+  _WorldView.setCenter(0, 0);
 
-  _WorldView.setCenter(_SpawnPosition);
+//  _WorldView.setCenter(_SpawnPosition);
 }
 
 void World::update(sf::Time dt)
@@ -70,7 +72,9 @@ void World::buildScene()
   //Add background to scene
   std::unique_ptr<SpriteNode> backgroundSprite(new SpriteNode(texture,
         textureRect));
-  backgroundSprite->setPosition(_WorldBounds.left, _WorldBounds.top);
+  //backgroundSprite->setPosition(_WorldBounds.left, _WorldBounds.top);
+
+  backgroundSprite->setPosition(0, 0);
   _SceneLayers[Background]->attachChild(std::move(backgroundSprite));
 
 }

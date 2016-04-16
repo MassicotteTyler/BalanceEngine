@@ -22,7 +22,7 @@ GameClient::GameClient(std::string ipAddress)
   //Pass ID and plane to world
   //Get all other aircrafts
   //Loop, update, render
-
+  _Window.setKeyRepeatEnabled(false);
   if (_Socket.connect(ipAddress, ServerPort, sf::seconds(5.f))
           == sf::TcpSocket::Done)
   {
@@ -41,6 +41,11 @@ GameClient::GameClient(std::string ipAddress)
 
     }
     //_Socket.setBlocking(false);
+  }
+  else
+  {
+    std::cout << "Could not connect to server" << std::endl;
+    exit(1);
   }
 
   sf::Clock clock;
@@ -77,6 +82,7 @@ void GameClient::draw()
 {
   _Window.clear(sf::Color::Black);
   _World.draw();
+  _Window.setView(_Window.getDefaultView());
   _Window.display();
   //_Window.setView(_Window.getDefaultView());
 
@@ -103,7 +109,7 @@ void GameClient::onDestroy()
 
 bool GameClient::update(sf::Time dt)
 {
-  if (connected && worldReady && playerReady)
+  if (connected)
   {
     _World.update(dt);
 
@@ -294,7 +300,6 @@ void GameClient::handlePacket(sf::Int32 packetType, sf::Packet& packet)
           aircraft->setPosition(aircraftPosition);
           aircraft->setRotation(rotation);
         }
-        std::cout << "Aircraft Updated" << std::endl;
       }break;
 
     case Server::PlayerEvent:
