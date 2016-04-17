@@ -58,6 +58,7 @@ GameClient::GameClient(std::string ipAddress)
     {
       timeSinceLastUpdate -= TimePerFrame;
       processInputs();
+      sendCurrentPosition();
       update(TimePerFrame);
     }
 
@@ -65,6 +66,17 @@ GameClient::GameClient(std::string ipAddress)
   }
 }
 
+void GameClient::sendCurrentPosition()
+{
+  sf::Packet packet;
+  Aircraft* playerCraft;
+  playerCraft = _World.getAircraft(_LocalPlayerID);
+  packet << Client::PositionUpdate;
+  packet << _LocalPlayerID;
+  packet << playerCraft->getWorldPosition().x;
+  packet << playerCraft->getWorldPosition().y;
+  _Socket.send(packet);
+ }
 void GameClient::processInputs()
 {
   CommandQueue& commands = _World.getCommandQueue();

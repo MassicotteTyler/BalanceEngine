@@ -27,6 +27,7 @@ class GameClient
     void updateBroadcastMessage(sf::Time elapsedTime);
     void handlePacket(sf::Int32 packetType, sf::Packet& packet);
     void processInputs();
+    void sendCurrentPosition();
 
   private:
     typedef std::unique_ptr<Player> PlayerPtr;
